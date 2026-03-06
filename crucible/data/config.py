@@ -48,6 +48,7 @@ class FormattingConfig:
         "{label}"
     )
     use_model_template: bool = True
+    system_prompt: str | None = None
     column_mapping: dict[str, str] = field(default_factory=dict)
     output_column: str = "formatted_text"
 

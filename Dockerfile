@@ -13,4 +13,4 @@ RUN poetry install --no-interaction --no-ansi --only main
 
 COPY crucible/ crucible/
 
-CMD ["python", "-m", "crucible"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "crucible.serving.wsgi:app"]

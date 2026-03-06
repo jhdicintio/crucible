@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import logging
 from pathlib import Path
@@ -201,7 +202,11 @@ class CausalLMModel:
         save_dir.mkdir(parents=True, exist_ok=True)
         self.model.save_pretrained(save_dir)
         self.tokenizer.save_pretrained(save_dir)
-        metadata = {"approach": self.approach, "base_model": self.model_name}
+        metadata = {
+            "approach": self.approach,
+            "base_model": self.model_name,
+            "training_date": datetime.datetime.now(datetime.UTC).isoformat(),
+        }
         (save_dir / _METADATA_FILE).write_text(json.dumps(metadata))
         logger.info("Model saved to %s", save_dir)
 

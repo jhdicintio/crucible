@@ -7,6 +7,8 @@ from pathlib import Path
 
 from omegaconf import OmegaConf
 
+from crucible.guardrails.config import GuardrailsConfig
+
 
 @dataclass
 class EvaluationConfig:
@@ -20,6 +22,10 @@ class EvaluationConfig:
     )
     reference_column: str = "output"
     column_mapping: dict[str, str] = field(default_factory=dict)
+    system_prompt: str | None = None
+    refusal_metadata_column: str | None = None
+    use_guardrail: bool = False
+    guardrails: GuardrailsConfig | None = None
     bertscore_model: str = "microsoft/deberta-xlarge-mnli"
     similarity_model: str = "all-MiniLM-L6-v2"
     output_file: str = "evaluation_results.json"

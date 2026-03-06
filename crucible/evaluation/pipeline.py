@@ -11,6 +11,7 @@ from flytekit import task, workflow
 
 from crucible.evaluation.config import EvaluationConfig
 from crucible.evaluation.evaluator import Evaluator
+from crucible.guardrails.refusal import RefusalGuardrail
 
 
 @dataclass
@@ -35,13 +36,22 @@ def evaluate(
         input_template=config.input_template,
         reference_column=config.reference_column,
         column_mapping=config.column_mapping,
+        system_prompt=config.system_prompt,
+        refusal_metadata_column=config.refusal_metadata_column,
+        use_guardrail=config.use_guardrail,
+        guardrails=config.guardrails,
         bertscore_model=config.bertscore_model,
         similarity_model=config.similarity_model,
         output_file=config.output_file,
         batch_size=config.batch_size,
     )
 
-    evaluator = Evaluator(resolved)
+    guardrail = (
+        RefusalGuardrail(config.guardrails)
+        if (config.use_guardrail and config.guardrails is not None)
+        else None
+    )
+    evaluator = Evaluator(resolved, guardrail=guardrail)
     results: dict[str, Any] = evaluator.run(test_df, qualitative_df=qualitative_df)
 
     return EvaluationResult(

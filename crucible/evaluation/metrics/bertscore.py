@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from bert_score import score as bert_score_fn
 
 
@@ -19,6 +21,7 @@ class BertScoreMetric:
         self,
         predictions: list[str],
         references: list[str],
+        metadata: list[dict[str, Any]] | None = None,
     ) -> dict[str, float]:
         if not predictions:
             return {

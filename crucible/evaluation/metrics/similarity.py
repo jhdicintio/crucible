@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -20,6 +22,7 @@ class SemanticSimilarityMetric:
         self,
         predictions: list[str],
         references: list[str],
+        metadata: list[dict[str, Any]] | None = None,
     ) -> dict[str, float]:
         if not predictions:
             return {"semantic_similarity": 0.0}

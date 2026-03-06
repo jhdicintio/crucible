@@ -12,7 +12,10 @@ import pandas as pd
 from crucible.evaluation.config import EvaluationConfig
 from crucible.evaluation.metrics.registry import build_metrics
 from crucible.evaluation.protocol import MetricProtocol
+from crucible.guardrails.refusal import RefusalGuardrail
+from crucible.guardrails.wrapper import GuardrailModelWrapper
 from crucible.training.model import CausalLMModel
+from crucible.training.protocol import ModelProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +30,21 @@ class Evaluator:
     extra_metrics:
         Additional ``MetricProtocol``-conforming instances to run alongside
         the built-in metrics listed in *config.metrics*.
+    guardrail:
+        Optional refusal guardrail; when set, model predictions are passed through it.
     """
 
     def __init__(
         self,
         config: EvaluationConfig,
         extra_metrics: list[MetricProtocol] | None = None,
+        guardrail: RefusalGuardrail | None = None,
     ) -> None:
         self.config = config
-        self.model = CausalLMModel.load(config.model_path)
+        model: ModelProtocol = CausalLMModel.load(config.model_path)
+        if guardrail is not None:
+            model = GuardrailModelWrapper(model, guardrail)
+        self.model = model
         self._metrics: list[MetricProtocol] = build_metrics(config)
         if extra_metrics:
             self._metrics.extend(extra_metrics)
@@ -49,6 +58,16 @@ class Evaluator:
         prompts = self._build_prompts(test_df)
         references = test_df[self.config.reference_column].tolist()
 
+        metadata: list[dict[str, Any]] | None = None
+        if (
+            self.config.refusal_metadata_column
+            and self.config.refusal_metadata_column in test_df.columns
+        ):
+            metadata = [
+                {"answerable": bool(row[self.config.refusal_metadata_column])}
+                for _, row in test_df.iterrows()
+            ]
+
         logger.info("Generating predictions for %d test examples …", len(prompts))
         raw_outputs = self._predict_batched(prompts)
         predictions = [
@@ -59,7 +78,7 @@ class Evaluator:
         results: dict[str, dict[str, float]] = {}
         for metric in self._metrics:
             logger.info("Computing %s …", metric.name)
-            results[metric.name] = metric.compute(predictions, references)
+            results[metric.name] = metric.compute(predictions, references, metadata=metadata)
         return results
 
     def evaluate_qualitative(
@@ -109,12 +128,16 @@ class Evaluator:
         """Format each row of *df* using the configured input template."""
         template = self.config.input_template
         mapping = self.config.column_mapping
+        system_prompt = self.config.system_prompt
         prompts: list[str] = []
         for _, row in df.iterrows():
             row_dict = dict(row)
             for alias, col in mapping.items():
                 row_dict[alias] = row_dict[col]
-            prompts.append(template.format(**row_dict))
+            text = template.format(**row_dict)
+            if system_prompt:
+                text = system_prompt.strip() + "\n\n" + text
+            prompts.append(text)
         return prompts
 
     def _predict_batched(self, prompts: list[str]) -> list[str]:

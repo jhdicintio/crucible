@@ -61,3 +61,13 @@ class TestFormatPrompts:
         config = FormattingConfig(template="{sentence}", output_column="my_col")
         result = format_prompts(df=simple_df, config=config)
         assert "my_col" in result.columns
+
+    def test_system_prompt_prepended(self, simple_df: pd.DataFrame) -> None:
+        config = FormattingConfig(
+            template="Text: {sentence}",
+            output_column="prompt",
+            system_prompt="You are a helpful assistant.",
+        )
+        result = format_prompts(df=simple_df, config=config)
+        assert result["prompt"].iloc[0].startswith("You are a helpful assistant.")
+        assert "Revenue rose 10%." in result["prompt"].iloc[0]

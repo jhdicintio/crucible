@@ -67,7 +67,7 @@ class TestEvaluator:
         assert results["test_metric"]["score"] == 0.75
         fake_metric.compute.assert_called_once()
         call_args = fake_metric.compute.call_args
-        preds, refs = call_args[1].values() if call_args[1] else call_args[0]
+        preds, refs = call_args[0][0], call_args[0][1]
         assert len(preds) == 2
         assert len(refs) == 2
 

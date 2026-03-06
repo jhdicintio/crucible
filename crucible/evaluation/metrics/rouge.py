@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from rouge_score import rouge_scorer
 
 
@@ -19,6 +21,7 @@ class RougeMetric:
         self,
         predictions: list[str],
         references: list[str],
+        metadata: list[dict[str, Any]] | None = None,
     ) -> dict[str, float]:
         totals: dict[str, float] = {"rouge1": 0.0, "rouge2": 0.0, "rougeL": 0.0}
         n = len(predictions)

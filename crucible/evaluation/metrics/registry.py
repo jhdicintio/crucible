@@ -6,6 +6,7 @@ from typing import Any
 
 from crucible.evaluation.config import EvaluationConfig
 from crucible.evaluation.metrics.bertscore import BertScoreMetric
+from crucible.evaluation.metrics.refusal import RefusalMetric
 from crucible.evaluation.metrics.rouge import RougeMetric
 from crucible.evaluation.metrics.similarity import SemanticSimilarityMetric
 from crucible.evaluation.protocol import MetricProtocol
@@ -14,6 +15,7 @@ BUILTIN_METRICS: dict[str, type] = {
     "rouge": RougeMetric,
     "bertscore": BertScoreMetric,
     "semantic_similarity": SemanticSimilarityMetric,
+    "refusal": RefusalMetric,
 }
 
 

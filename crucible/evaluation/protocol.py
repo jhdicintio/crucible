@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -21,6 +21,7 @@ class MetricProtocol(Protocol):
         self,
         predictions: list[str],
         references: list[str],
+        metadata: list[dict[str, Any]] | None = None,
     ) -> dict[str, float]:
-        """Return sub-metric name -> value."""
+        """Return sub-metric name -> value. Some metrics (e.g. refusal) use metadata."""
         ...
