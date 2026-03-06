@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import cast
 
 from flytekit import dynamic, task
 
@@ -15,7 +16,7 @@ from crucible.training.pipeline import FinetuneResult, finetune
 
 @task
 def _model_path_from_finetune(ft_result: FinetuneResult) -> str:
-    """Extract model_path so we can pass it as a resolved value to evaluate (Flyte Promise handling)."""
+    """Extract model_path so evaluate sees a resolved value."""
     return ft_result.model_path
 
 
@@ -29,7 +30,7 @@ class PipelineResult:
 def _make_pipeline_result(
     ft_result: FinetuneResult, eval_result: EvaluationResult
 ) -> PipelineResult:
-    """Build PipelineResult from resolved task outputs (avoids Promise introspection in dynamic workflow)."""
+    """Build PipelineResult from resolved task outputs."""
     return PipelineResult(finetune=ft_result, evaluation=eval_result)
 
 
@@ -60,7 +61,7 @@ def full_pipeline(config_path: str) -> PipelineResult:
         model_path=model_path,
         config=config.evaluation,
     )
-    return _make_pipeline_result(ft_result=ft_result, eval_result=eval_result)
+    return cast(PipelineResult, _make_pipeline_result(ft_result=ft_result, eval_result=eval_result))
 
 
 def run_full_pipeline(
@@ -73,7 +74,7 @@ def run_full_pipeline(
     """
     if config_path is None:
         raise ValueError("config_path is required")
-    return full_pipeline(config_path=str(config_path))  # type: ignore[no-any-return]
+    return cast(PipelineResult, full_pipeline(config_path=str(config_path)))
 
 
 if __name__ == "__main__":
