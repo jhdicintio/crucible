@@ -1,0 +1,22 @@
+{
+  "quantitative": {
+    "rouge": {
+      "rouge1": 0.016667,
+      "rouge2": 0.0,
+      "rougeL": 0.016667
+    },
+    "bertscore": {
+      "bertscore_precision": 0.232364,
+      "bertscore_recall": 0.344134,
+      "bertscore_f1": 0.277414
+    },
+    "semantic_similarity": {
+      "semantic_similarity": 0.195231
+    },
+    "refusal": {
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "false_refusal_rate": 0.0
+    }
+  }
+}

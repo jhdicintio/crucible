@@ -2,6 +2,14 @@ data_processing:
   dataset:
     name: gbharti/finance-alpaca
     split: train
+    sample_size: 10
+    sample_strategy: random
+    sample_seed: 42
+    sample_text_columns: ["instruction", "input"]
+    sample_embedding_model: all-MiniLM-L6-v2
+    sample_quality_min_chars: 20
+    sample_quality_max_chars: 4000
+    sample_quality_dedup_threshold: 0.95
   cleaning:
     drop_nans: true
     drop_duplicates: true
@@ -15,8 +23,6 @@ data_processing:
     seed: 42
     stratify_column: null
   formatting:
-    # Optional: prepend a system prompt (e.g. from crucible.guardrails.constants.DEFAULT_SYSTEM_PROMPT)
-    system_prompt: null
     template: |-
       ### Instruction:
       {instruction}
@@ -43,33 +49,34 @@ finetuning:
     bias: none
     task_type: CAUSAL_LM
   training:
-    output_dir: outputs/finetuned
-    num_epochs: 3
-    per_device_train_batch_size: 4
-    per_device_eval_batch_size: 4
+    output_dir: outputs/experiment_0_baseline
+    num_epochs: 1
+    per_device_train_batch_size: 8
+    per_device_eval_batch_size: 8
     learning_rate: 2.0e-4
     weight_decay: 0.01
     warmup_ratio: 0.03
-    gradient_accumulation_steps: 4
-    max_seq_length: 512
+    gradient_accumulation_steps: 2
+    max_seq_length: 256
     seed: 42
-    logging_steps: 10
-    eval_steps: 100
-    save_steps: 500
+    fp16: true
+    bf16: false
+    dataloader_num_workers: 4
+    tokenization_num_proc: 4
+    logging_steps: 5
+    eval_steps: 500
+    save_steps: 999
     eval_strategy: steps
-    log_file: training_log.jsonl
+    log_file: outputs/experiment_0_baseline/training_log.jsonl
     text_column: formatted_text
 
 evaluation:
-  model_path: outputs/finetuned
-  system_prompt: null
-  refusal_metadata_column: null  # e.g. "answerable" for refusal metric
-  use_guardrail: false
-  guardrails: null  # or { confidence_threshold: 0.45, scope_threshold: 0.40 }
+  model_path: outputs/experiment_0_baseline
   metrics:
     - rouge
     - bertscore
     - semantic_similarity
+    - refusal
   max_new_tokens: 256
   batch_size: 8
   input_template: |-
@@ -82,11 +89,11 @@ evaluation:
     ### Response:
   reference_column: output
   column_mapping: {}
-  bertscore_model: ProsusAI/finbert
+  bertscore_model: microsoft/deberta-xlarge-mnli
   similarity_model: all-MiniLM-L6-v2
-  output_file: evaluation_results.json
+  output_file: outputs/experiment_0_baseline/evaluation_results.json
 
 tracking:
   backend: sqlite
   sqlite_path: experiments.db
-  run_name: null
+  run_name: "exp1_baseline_smollm_lora_r8_random5k"

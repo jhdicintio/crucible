@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 
-from flytekit import workflow
+from flytekit import dynamic, task
 
 from crucible.config import CrucibleConfig
 from crucible.data.pipeline import data_processing_pipeline
 from crucible.evaluation.pipeline import EvaluationResult, evaluate
 from crucible.training.pipeline import FinetuneResult, finetune
+
+
+@task
+def _model_path_from_finetune(ft_result: FinetuneResult) -> str:
+    """Extract model_path so we can pass it as a resolved value to evaluate (Flyte Promise handling)."""
+    return ft_result.model_path
 
 
 @dataclass
@@ -19,35 +25,57 @@ class PipelineResult:
     evaluation: EvaluationResult = field(default_factory=lambda: EvaluationResult(output_file=""))
 
 
-@workflow
-def full_pipeline(config: CrucibleConfig) -> PipelineResult:
-    """Load & clean data, fine-tune a model, then evaluate on the test set."""
+@task
+def _make_pipeline_result(
+    ft_result: FinetuneResult, eval_result: EvaluationResult
+) -> PipelineResult:
+    """Build PipelineResult from resolved task outputs (avoids Promise introspection in dynamic workflow)."""
+    return PipelineResult(finetune=ft_result, evaluation=eval_result)
+
+
+@task
+def load_config(config_path: str) -> CrucibleConfig:
+    """Load CrucibleConfig from a YAML file (Flyte task so workflow can use it)."""
+    return CrucibleConfig.from_yaml(config_path)
+
+
+@dynamic
+def full_pipeline(config_path: str) -> PipelineResult:
+    """Load config from YAML, then run data → fine-tune → evaluation.
+
+    Use this as the entrypoint: pass a path to an experiment YAML.
+    """
+    config = load_config(config_path=config_path)
     splits = data_processing_pipeline(config=config.data_processing)
-    full_config_dict = asdict(config)
     ft_result = finetune(
         train_df=splits.train,
         val_df=splits.val,
         config=config.finetuning,
         tracking_config=config.tracking,
-        full_config_dict=full_config_dict,
+        full_config=config,
     )
+    model_path = _model_path_from_finetune(ft_result=ft_result)
     eval_result = evaluate(
         test_df=splits.test,
-        model_path=ft_result.model_path,
+        model_path=model_path,
         config=config.evaluation,
     )
-    return PipelineResult(finetune=ft_result, evaluation=eval_result)
+    return _make_pipeline_result(ft_result=ft_result, eval_result=eval_result)
 
 
 def run_full_pipeline(
-    config: CrucibleConfig | None = None,
     config_path: str | Path | None = None,
 ) -> PipelineResult:
-    """Convenience entry point — accepts a config or YAML path."""
-    if config is not None and config_path is not None:
-        raise ValueError("Provide config or config_path, not both")
-    if config_path is not None:
-        config = CrucibleConfig.from_yaml(config_path)
-    if config is None:
-        config = CrucibleConfig()
-    return full_pipeline(config=config)  # type: ignore[no-any-return]
+    """Run the full pipeline with the workflow as entrypoint.
+
+    Loads the given YAML path inside the workflow. Pass the path to your
+    experiment config (e.g. conf/experiments/experiment_0_baseline.yaml).
+    """
+    if config_path is None:
+        raise ValueError("config_path is required")
+    return full_pipeline(config_path=str(config_path))  # type: ignore[no-any-return]
+
+
+if __name__ == "__main__":
+    result = run_full_pipeline(config_path="conf/experiments/experiment_0_baseline.yaml")
+    print(result)

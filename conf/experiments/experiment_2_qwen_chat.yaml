@@ -1,0 +1,109 @@
+## Experiment 3: Larger model + chat-style prompt template
+## Tests two things simultaneously:
+##   (a) whether stepping up to Qwen2.5-0.5B meaningfully improves output quality
+##   (b) whether a chat-style prompt template (vs Alpaca-style) affects behavior
+## Uses same curated 5k sample as exp2 to isolate model/template as the variable.
+##
+## NOTE: Qwen2.5-0.5B is ~4x larger than SmolLM2-135M — expect slower CPU training.
+## If time is tight, reduce num_epochs to 2.
+
+data_processing:
+  dataset:
+    name: gbharti/finance-alpaca
+    split: train
+    sample_size: 5000
+    sample_strategy: curated      # same curation as exp2
+    curation:
+      min_output_length: 50
+      max_output_length: 1024
+      require_instruction: true
+      quality_score_threshold: 0.6
+  cleaning:
+    drop_nans: true
+    drop_duplicates: true
+    strip_whitespace: true
+    lowercase: false
+    columns: []
+  split:
+    train_ratio: 0.8
+    val_ratio: 0.1
+    test_ratio: 0.1
+    seed: 42
+    stratify_column: null
+  formatting:
+    # Chat-style template — matches how Qwen2.5 was instruction-tuned
+    # and how you'll query it at inference time. Key difference from
+    # Alpaca format: system role is explicit, turn structure is clearer.
+    template: |-
+      <|im_start|>system
+      You are a knowledgeable financial assistant for a banking team. Answer questions about financial concepts, products, and markets accurately. If you are unsure, say so.<|im_end|>
+      <|im_start|>user
+      {instruction}
+
+      {input}<|im_end|>
+      <|im_start|>assistant
+      {output}<|im_end|>
+    column_mapping: {}
+    output_column: formatted_text
+
+finetuning:
+  model:
+    name: Qwen/Qwen2.5-0.5B       # step up from 135M — better reasoning capability
+    approach: lora
+  lora:
+    r: 16                          # middle ground — balances exp1 and exp2
+    lora_alpha: 32
+    lora_dropout: 0.05
+    target_modules:
+      - q_proj
+      - v_proj
+      - k_proj
+      - o_proj
+    bias: none
+    task_type: CAUSAL_LM
+  training:
+    output_dir: outputs/experiment_3_qwen_chat
+    num_epochs: 3                  # reduce to 2 if CPU training is too slow
+    per_device_train_batch_size: 2 # smaller batch — Qwen is larger, more memory
+    per_device_eval_batch_size: 2
+    learning_rate: 1.5e-4
+    weight_decay: 0.01
+    warmup_ratio: 0.05
+    gradient_accumulation_steps: 8 # compensate for smaller batch size
+    max_seq_length: 512
+    seed: 42
+    logging_steps: 10
+    eval_steps: 100
+    save_steps: 500
+    eval_strategy: steps
+    log_file: outputs/experiment_3_qwen_chat/training_log.jsonl
+    text_column: formatted_text
+
+evaluation:
+  model_path: outputs/experiment_3_qwen_chat
+  metrics:
+    - rouge
+    - bertscore
+    - semantic_similarity
+    - refusal
+  max_new_tokens: 256
+  batch_size: 4                    # smaller eval batch for larger model
+  # NOTE: inference template must match training template — no <|im_end|> on assistant turn
+  input_template: |-
+    <|im_start|>system
+    You are a knowledgeable financial assistant for a banking team. Answer questions about financial concepts, products, and markets accurately. If you are unsure, say so.<|im_end|>
+    <|im_start|>user
+    {instruction}
+
+    {input}<|im_end|>
+    <|im_start|>assistant
+  reference_column: output
+  column_mapping: {}
+  bertscore_model: microsoft/deberta-xlarge-mnli
+  similarity_model: all-MiniLM-L6-v2
+  output_file: outputs/experiment_3_qwen_chat/evaluation_results.json
+
+tracking:
+  backend: sqlite
+  sqlite_path: experiments.db
+  run_name: "exp3_qwen0.5b_lora_r16_chat_curated5k"

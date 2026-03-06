@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +10,7 @@ import pandas as pd
 from datasets import Dataset
 from flytekit import task, workflow
 
+from crucible.config import CrucibleConfig
 from crucible.tracking.config import ExperimentTrackingConfig
 from crucible.tracking.factory import get_tracker
 from crucible.tracking.protocol import ExperimentTracker
@@ -32,7 +33,7 @@ def finetune(
     val_df: pd.DataFrame,
     config: FinetuningConfig,
     tracking_config: ExperimentTrackingConfig | None = None,
-    full_config_dict: dict[str, Any] | None = None,
+    full_config: CrucibleConfig | None = None,
 ) -> FinetuneResult:
     """Set up a model, fine-tune it, save to disk, and return summary metrics.
 
@@ -49,7 +50,7 @@ def finetune(
         tracker = get_tracker(tracking_config)
         if tracker is not None:
             run_name = tracking_config.run_name or config.model.name
-            run_id = tracker.start_run(run_name=run_name, config=full_config_dict)
+            run_id = tracker.start_run(run_name=run_name, config=asdict(full_config))
             assert run_id is not None
 
     metrics: dict[str, Any]

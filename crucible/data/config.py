@@ -16,6 +16,18 @@ from omegaconf import OmegaConf
 class DatasetConfig:
     name: str = "takala/financial_phrasebank"
     split: str = "train"
+    sample_size: int | None = None
+    sample_strategy: str = "random"
+    sample_seed: int = 42
+    # For stratified: column to stratify by (e.g. label, output) so subset preserves distribution
+    sample_stratify_column: str | None = None
+    # For diversity / quality: columns to concatenate for embedding (e.g. ["instruction", "input"])
+    sample_text_columns: list[str] | None = None
+    sample_embedding_model: str = "all-MiniLM-L6-v2"
+    # Quality: drop examples outside [min_chars, max_chars]; drop near-duplicates (cos sim > thresh)
+    sample_quality_min_chars: int = 20
+    sample_quality_max_chars: int = 4000
+    sample_quality_dedup_threshold: float = 0.95
 
 
 @dataclass

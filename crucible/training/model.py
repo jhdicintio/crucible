@@ -122,7 +122,13 @@ class CausalLMModel:
                 max_length=tcfg.max_seq_length,
             )
 
-        return dataset.map(_tok, batched=True, remove_columns=dataset.column_names)
+        num_proc = getattr(tcfg, "tokenization_num_proc", 1) or 1
+        return dataset.map(
+            _tok,
+            batched=True,
+            remove_columns=dataset.column_names,
+            num_proc=num_proc if num_proc > 1 else None,
+        )
 
     # ------------------------------------------------------------------
     # Public API  (satisfies ModelProtocol)
@@ -150,6 +156,8 @@ class CausalLMModel:
             gradient_accumulation_steps=tcfg.gradient_accumulation_steps,
             fp16=tcfg.fp16,
             bf16=tcfg.bf16,
+            dataloader_num_workers=getattr(tcfg, "dataloader_num_workers", 0),
+            dataloader_pin_memory=getattr(tcfg, "dataloader_pin_memory", True),
             logging_steps=tcfg.logging_steps,
             eval_strategy=tcfg.eval_strategy if tok_val else "no",
             eval_steps=tcfg.eval_steps if tok_val else None,

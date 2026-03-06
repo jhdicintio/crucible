@@ -58,23 +58,34 @@ tasks:
     cmds:
       - docker run --rm crucible {{.CLI_ARGS}}
 
+  train:
+    desc: "Run full pipeline (data → train → eval). Usage: task train [expt.yaml]"
+    cmds:
+      - 'poetry run pyflyte run crucible/pipeline.py full_pipeline --config_path {{.CLI_ARGS | default "conf/experiments/experiment_0_baseline.yaml"}}'
+
   serve:
     desc: Run the model serving API locally
     cmds:
-      - poetry run flask --app crucible.serving.app:create_app run --host 0.0.0.0 --port 5000
+      - poetry run flask --app crucible.serving.app:create_app run --host 0.0.0.0 --port 8080
     env:
-      CRUCIBLE_SERVING_CONFIG: conf/serving.yaml
+      CRUCIBLE_SERVING_CONFIG: conf/defaults/serving.yaml
 
   docker:serve:
     desc: Serve the model API in Docker
     deps: [docker:build]
     cmds:
-      - docker run --rm -p 5000:5000 -v {{.MODEL_DIR}}:/app/outputs/finetuned crucible
+      - docker run --rm -p 8080:8080 -v {{.MODEL_DIR}}:/app/outputs/finetuned crucible
     vars:
-      MODEL_DIR: '{{.MODEL_DIR | default "./outputs/finetuned"}}'
+      MODEL_DIR: '{{.MODEL_DIR | default "./outputs/experiment_0_baseline"}}'
 
   clean:
     desc: Remove build artifacts
     cmds:
       - rm -rf dist/ .mypy_cache/ .pytest_cache/ .ruff_cache/
       - find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
+  api:ping:
+    desc: Hit /health and /ask on the local API
+    cmds:
+      - curl -i http://127.0.0.1:8080/health
+      - curl -i -X POST -H "Content-Type: application/json" -d '{"question": "test question from Task ping-api"}' http://127.0.0.1:8080/ask

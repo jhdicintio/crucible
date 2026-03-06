@@ -46,6 +46,9 @@ class TrainingConfig:
     seed: int = 42
     fp16: bool = False
     bf16: bool = False
+    dataloader_num_workers: int = 0
+    dataloader_pin_memory: bool = True
+    tokenization_num_proc: int = 1
     logging_steps: int = 10
     eval_steps: int = 100
     save_steps: int = 500

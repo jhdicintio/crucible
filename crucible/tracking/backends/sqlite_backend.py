@@ -102,7 +102,8 @@ class SQLiteTracker:
         for key, value in metrics.items():
             if isinstance(value, int | float):
                 conn.execute(
-                    "INSERT INTO metrics (run_id, key, value, step, ts) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT OR REPLACE INTO metrics (run_id, key, value, step, ts) "
+                    "VALUES (?, ?, ?, ?, ?)",
                     (self._run_id, key, float(value), step_val, now),
                 )
         conn.commit()

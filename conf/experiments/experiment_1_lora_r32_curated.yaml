@@ -1,0 +1,102 @@
+## Experiment 2: Higher LoRA rank + curated data sample
+## Tests whether (a) more expressive LoRA adapters and (b) quality-filtered
+## training data meaningfully improves over the baseline.
+## Key differences from exp1: r=32, lora_alpha=64, curated sample strategy,
+## more target modules, lower learning rate.
+
+data_processing:
+  dataset:
+    name: gbharti/finance-alpaca
+    split: train
+    sample_size: 5000            # same size as baseline for fair comparison
+    sample_strategy: curated     # your scoring pipeline filters low-quality examples
+    curation:
+      min_output_length: 50      # drop trivially short answers
+      max_output_length: 1024    # drop excessively long/noisy outputs
+      require_instruction: true  # drop examples with empty instruction field
+      quality_score_threshold: 0.6  # if you implement a quality scorer
+  cleaning:
+    drop_nans: true
+    drop_duplicates: true
+    strip_whitespace: true
+    lowercase: false
+    columns: []
+  split:
+    train_ratio: 0.8
+    val_ratio: 0.1
+    test_ratio: 0.1
+    seed: 42
+    stratify_column: null
+  formatting:
+    template: |-
+      ### Instruction:
+      {instruction}
+
+      ### Input:
+      {input}
+
+      ### Response:
+      {output}
+    column_mapping: {}
+    output_column: formatted_text
+
+finetuning:
+  model:
+    name: HuggingFaceTB/SmolLM2-135M
+    approach: lora
+  lora:
+    r: 32                         # higher rank — more expressive adapters
+    lora_alpha: 64                # keep alpha = 2x r as rule of thumb
+    lora_dropout: 0.05
+    target_modules:               # expand to more modules than baseline
+      - q_proj
+      - v_proj
+      - k_proj
+      - o_proj
+    bias: none
+    task_type: CAUSAL_LM
+  training:
+    output_dir: outputs/experiment_2_lora_r32_curated
+    num_epochs: 3
+    per_device_train_batch_size: 4
+    per_device_eval_batch_size: 4
+    learning_rate: 1.0e-4         # lower LR — higher rank benefits from more careful updates
+    weight_decay: 0.01
+    warmup_ratio: 0.05            # slightly longer warmup
+    gradient_accumulation_steps: 4
+    max_seq_length: 512
+    seed: 42
+    logging_steps: 10
+    eval_steps: 100
+    save_steps: 500
+    eval_strategy: steps
+    log_file: outputs/experiment_2_lora_r32_curated/training_log.jsonl
+    text_column: formatted_text
+
+evaluation:
+  model_path: outputs/experiment_2_lora_r32_curated
+  metrics:
+    - rouge
+    - bertscore
+    - semantic_similarity
+    - refusal
+  max_new_tokens: 256
+  batch_size: 8
+  input_template: |-
+    ### Instruction:
+    {instruction}
+
+    ### Input:
+    {input}
+
+    ### Response:
+  reference_column: output
+  column_mapping: {}
+  bertscore_model: microsoft/deberta-xlarge-mnli
+  similarity_model: all-MiniLM-L6-v2
+  output_file: outputs/experiment_2_lora_r32_curated/evaluation_results.json
+
+tracking:
+  backend: sqlite
+  sqlite_path: experiments.db
+  run_name: "exp2_smollm_lora_r32_curated5k"

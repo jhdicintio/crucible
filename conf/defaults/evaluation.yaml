@@ -20,7 +20,7 @@ input_template: |-
 reference_column: output
 column_mapping: {}
 
-bertscore_model: microsoft/deberta-xlarge-mnli
+bertscore_model: ProsusAI/finbert        # swap DeBERTa-xlarge — smaller, finance-aware
 similarity_model: all-MiniLM-L6-v2
 
 output_file: evaluation_results.json
