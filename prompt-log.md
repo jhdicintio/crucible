@@ -3,3 +3,11 @@
 - **2026-03-06** — Hi cursor, would you mind putting every prompy I pass you into a prompt-log.md file in this repository?
 - **2026-03-06** — Awesome, thanks. First thing: this repo is going to be used to fine tune SLM for financial use cases. Let's start by setting up the repo as a modern python repo using: poetry, precommit, docker, Task, and pytest. Further I'd like the source code directory to be named `crucible`, not src
 - **2026-03-06** — The multi-stage build for the dockerfile is a bit overkill right now, could you do a single stage build without the dev deps
+- **2026-03-06** — Could you update the data pipeline to take in either a pipeline config or a yaml file that will be resolved to the config? also I anticipate that this repo will have several other pipelines so would you rename it to something like 'data processing pipeline"
+- **2026-03-06** — What is config.subset intended to do in load_hf_dataset? Would you mind taking it out for now?
+- **2026-03-06** — Could you iterate running the data processing pipeline against the yaml in conf until it succeeds?
+- **2026-03-06** — Amazing, thank you
+- **2026-03-06** — Ok, this is excellent. Now, using the same paradigms, could you stand up a fine tuning workflow that allows a user to point to a model on hugging face, choose a fine tuning approach (full, lora, qlora), accepts hyperparameters, sets random seeds, logs training loss and val metrics to a log file (configurable), saves the model to disk. I'd also love a model protocol with train, load, save, predict methods. Please have all the configurables loaded from yaml as well, and ideally from a single yaml alongside the data processing configs if a user desires.
+- **2026-03-06** — Plan: evaluation pipeline. Quantitative metrics (ROUGE, BERTScore, semantic similarity) against test set with a metric protocol for user-defined metrics. Qualitative sample showing model outputs. YAML defined, leveraging ModelProtocol.
+- **2026-03-06** — I have all the pre-commit errors, could you fix them?
+- **2026-03-06** — Could you fix all these pre-commit errors by iterating with `pre-commit run --all-files`

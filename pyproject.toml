@@ -3,14 +3,20 @@ name = "crucible"
 version = "0.1.0"
 description = "Fine-tuning SLMs for financial use cases"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.13"
 license = "MIT"
 
 [tool.poetry]
 packages = [{ include = "crucible" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.14"
+python = ">=3.11,<3.13"
+flytekit = "^1.15"
+datasets = "^3.0"
+pandas = "^2.2"
+hydra-core = "^1.3"
+omegaconf = "^2.3"
+scikit-learn = "^1.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
@@ -18,6 +24,8 @@ pytest-cov = "^6.0"
 pre-commit = "^4.0"
 ruff = "^0.9"
 mypy = "^1.14"
+pandas-stubs = "^2.2"
+jupyter = "^1.1.1"
 
 [build-system]
 requires = ["poetry-core>=2.0"]
@@ -26,6 +34,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-v", "--tb=short", "--strict-markers"]
+markers = ["integration: tests that make external network calls"]
 
 [tool.ruff]
 target-version = "py311"
@@ -39,3 +48,7 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["crucible.*", "tests.*"]
+disallow_untyped_decorators = false

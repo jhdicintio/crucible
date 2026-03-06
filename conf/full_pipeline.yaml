@@ -1,0 +1,59 @@
+data_processing:
+  dataset:
+    name: gbharti/finance-alpaca
+    split: train
+  cleaning:
+    drop_nans: true
+    drop_duplicates: true
+    strip_whitespace: true
+    lowercase: false
+    columns: []
+  split:
+    train_ratio: 0.8
+    val_ratio: 0.1
+    test_ratio: 0.1
+    seed: 42
+    stratify_column: null
+  formatting:
+    template: |-
+      ### Instruction:
+      {instruction}
+
+      ### Input:
+      {input}
+
+      ### Response:
+      {output}
+    column_mapping: {}
+    output_column: formatted_text
+
+finetuning:
+  model:
+    name: HuggingFaceTB/SmolLM2-135M
+    approach: lora
+  lora:
+    r: 8
+    lora_alpha: 16
+    lora_dropout: 0.05
+    target_modules:
+      - q_proj
+      - v_proj
+    bias: none
+    task_type: CAUSAL_LM
+  training:
+    output_dir: outputs/finetuned
+    num_epochs: 3
+    per_device_train_batch_size: 4
+    per_device_eval_batch_size: 4
+    learning_rate: 2.0e-4
+    weight_decay: 0.01
+    warmup_ratio: 0.03
+    gradient_accumulation_steps: 4
+    max_seq_length: 512
+    seed: 42
+    logging_steps: 10
+    eval_steps: 100
+    save_steps: 500
+    eval_strategy: steps
+    log_file: training_log.jsonl
+    text_column: formatted_text

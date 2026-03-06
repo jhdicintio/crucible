@@ -43,3 +43,14 @@ task docker:build      # production image
 task docker:build:dev  # dev image with test tooling
 task docker:test       # run tests inside container
 ```
+
+
+# Design Decisions:
+
+## Workflow Orchestration
+
+I chose flyte because:
+- minimal local / deployed gap
+- nice built-in caching
+- workflows are easily composable
+- resources can easily be provided when required

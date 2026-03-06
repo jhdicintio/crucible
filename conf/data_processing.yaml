@@ -1,0 +1,30 @@
+dataset:
+  name: gbharti/finance-alpaca
+  split: train
+
+cleaning:
+  drop_nans: true
+  drop_duplicates: true
+  strip_whitespace: true
+  lowercase: false
+  columns: []
+
+split:
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+  seed: 42
+  stratify_column: null
+
+formatting:
+  template: |-
+    ### Instruction:
+    {instruction}
+
+    ### Input:
+    {input}
+
+    ### Response:
+    {output}
+  column_mapping: {}
+  output_column: formatted_text
