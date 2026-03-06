@@ -11,3 +11,5 @@
 - **2026-03-06** — Plan: evaluation pipeline. Quantitative metrics (ROUGE, BERTScore, semantic similarity) against test set with a metric protocol for user-defined metrics. Qualitative sample showing model outputs. YAML defined, leveraging ModelProtocol.
 - **2026-03-06** — I have all the pre-commit errors, could you fix them?
 - **2026-03-06** — Could you fix all these pre-commit errors by iterating with `pre-commit run --all-files`
+- **2026-03-06** — Hey!  I'd like to plan out the next steps for this repo while the evaluation work is in progress; I'd finally like to standup a flask API that deos model serving. It should have a POST /ask which accepts a JSON with question field (optional context field), returns the models answer and GET /health returns a 200 with model metadata (name, adaptation method, training date). I'd like this to use the model protocol and it should be easily run locally using `task` and docker so that any machine can run it
+- **2026-03-06** — could you fix these precommit errors in a similar way?

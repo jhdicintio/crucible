@@ -57,3 +57,25 @@ finetuning:
     eval_strategy: steps
     log_file: training_log.jsonl
     text_column: formatted_text
+
+evaluation:
+  model_path: outputs/finetuned
+  metrics:
+    - rouge
+    - bertscore
+    - semantic_similarity
+  max_new_tokens: 256
+  batch_size: 8
+  input_template: |-
+    ### Instruction:
+    {instruction}
+
+    ### Input:
+    {input}
+
+    ### Response:
+  reference_column: output
+  column_mapping: {}
+  bertscore_model: microsoft/deberta-xlarge-mnli
+  similarity_model: all-MiniLM-L6-v2
+  output_file: evaluation_results.json

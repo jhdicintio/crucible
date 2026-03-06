@@ -1,4 +1,4 @@
-"""Top-level config that combines data processing and fine-tuning."""
+"""Top-level config that combines data processing, fine-tuning, and evaluation."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from pathlib import Path
 from omegaconf import OmegaConf
 
 from crucible.data.config import DataProcessingConfig
+from crucible.evaluation.config import EvaluationConfig
 from crucible.training.config import FinetuningConfig
 
 
@@ -15,6 +16,7 @@ from crucible.training.config import FinetuningConfig
 class CrucibleConfig:
     data_processing: DataProcessingConfig = field(default_factory=DataProcessingConfig)
     finetuning: FinetuningConfig = field(default_factory=FinetuningConfig)
+    evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> CrucibleConfig:
