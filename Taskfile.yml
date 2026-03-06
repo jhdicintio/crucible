@@ -88,4 +88,6 @@ tasks:
     desc: Hit /health and /ask on the local API
     cmds:
       - curl -i http://127.0.0.1:8080/health
-      - curl -i -X POST -H "Content-Type: application/json" -d '{"question": "test question from Task ping-api"}' http://127.0.0.1:8080/ask
+      - >-
+        curl -i -X POST -H "Content-Type: application/json" -d '{"question":
+        "test question from Task ping-api"}' http://127.0.0.1:8080/ask

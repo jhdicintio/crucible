@@ -50,7 +50,10 @@ def finetune(
         tracker = get_tracker(tracking_config)
         if tracker is not None:
             run_name = tracking_config.run_name or config.model.name
-            run_id = tracker.start_run(run_name=run_name, config=asdict(full_config))
+            cfg_dict: dict[str, Any] | None = (
+                asdict(full_config) if full_config is not None else None
+            )
+            run_id = tracker.start_run(run_name=run_name, config=cfg_dict)
             assert run_id is not None
 
     metrics: dict[str, Any]

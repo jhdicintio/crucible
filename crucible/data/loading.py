@@ -65,7 +65,7 @@ def _build_text_column(df: pd.DataFrame, text_columns: list[str]) -> list[str]:
     texts = df[text_columns[0]].astype(str)
     for col in text_columns[1:]:
         texts = texts + " " + df[col].astype(str)
-    return texts.tolist()
+    return [str(x) for x in texts]
 
 
 def _sample_diversity(
@@ -121,7 +121,7 @@ def _sample_quality(
     # Dedup: keep first of each cluster (cosine sim > threshold)
     rng = np.random.default_rng(seed)
     order = rng.permutation(len(x_norm))
-    kept = []
+    kept: list[int] = []
     for idx in order:
         if not kept:
             kept.append(idx)

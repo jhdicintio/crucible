@@ -20,3 +20,4 @@
 - **2026-03-06** — Can you run through the README and assert that all of the commands are functional?
 - **2026-03-06 11:03** — could you hit this endpoint for /ask and /health from using curl @/Users/jackdicintio/.cursor/projects/Users-jackdicintio-workspace-crucible/terminals/3.txt:991-1000
 - **2026-03-06 11:05** — yeah would you mind putting those as task ping-api
+- **2026-03-06** — there are a bunch of precommit issues could you help fix them?

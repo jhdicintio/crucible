@@ -92,7 +92,7 @@ task fmt
 **Health check**
 
 ```bash
-curl -s http://localhost:5000/health
+curl -s http://localhost:8080/health
 ```
 
 Example response:
@@ -111,7 +111,7 @@ Example response:
 **Ask a question**
 
 ```bash
-curl -s -X POST http://localhost:5000/ask \
+curl -s -X POST http://localhost:8080/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "What is a Tier 1 capital ratio?"}'
 ```
@@ -119,7 +119,7 @@ curl -s -X POST http://localhost:5000/ask \
 With optional context:
 
 ```bash
-curl -s -X POST http://localhost:5000/ask \
+curl -s -X POST http://localhost:8080/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "What is the ratio in this document?", "context": "The bank reported a Tier 1 ratio of 14.2%."}'
 ```
@@ -140,7 +140,7 @@ Response:
   task serve
   ```
 
-  The API listens on `http://0.0.0.0:5000`. Override config path with `CRUCIBLE_SERVING_CONFIG` if needed.
+  The API listens on `http://0.0.0.0:8080`. Override config path with `CRUCIBLE_SERVING_CONFIG` if needed.
 
 - **Docker:** Build and run with the model directory mounted:
 
