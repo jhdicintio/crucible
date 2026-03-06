@@ -8,6 +8,8 @@ from typing import Any
 
 from transformers import TrainerCallback, TrainerControl, TrainerState, TrainingArguments
 
+from crucible.tracking.protocol import ExperimentTracker
+
 
 class FileLoggingCallback(TrainerCallback):  # type: ignore[misc]
     """Append every Trainer log event as a JSON line to *log_file*."""
@@ -34,3 +36,24 @@ class FileLoggingCallback(TrainerCallback):  # type: ignore[misc]
             entry[k] = round(v, 6) if isinstance(v, float) else v
         with open(self.log_file, "a") as f:
             f.write(json.dumps(entry) + "\n")
+
+
+class TrackingCallback(TrainerCallback):  # type: ignore[misc]
+    """Forward Trainer log events to an ExperimentTracker."""
+
+    def __init__(self, tracker: ExperimentTracker) -> None:
+        self.tracker = tracker
+
+    def on_log(
+        self,
+        args: TrainingArguments,
+        state: TrainerState,
+        control: TrainerControl,
+        logs: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        if logs is None:
+            return
+        metrics = {k: float(v) for k, v in logs.items() if isinstance(v, int | float)}
+        if metrics:
+            self.tracker.log_metrics(metrics, step=state.global_step)

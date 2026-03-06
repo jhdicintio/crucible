@@ -20,7 +20,8 @@ from transformers import (
     set_seed,
 )
 
-from crucible.training.callbacks import FileLoggingCallback
+from crucible.tracking.protocol import ExperimentTracker
+from crucible.training.callbacks import FileLoggingCallback, TrackingCallback
 from crucible.training.config import FinetuningConfig
 
 logger = logging.getLogger(__name__)
@@ -130,8 +131,9 @@ class CausalLMModel:
         self,
         train_dataset: Dataset,
         val_dataset: Dataset | None = None,
+        tracker: ExperimentTracker | None = None,
     ) -> dict[str, Any]:
-        """Fine-tune and return metrics."""
+        """Fine-tune and return metrics. Optionally log to an ExperimentTracker."""
         tcfg = self.config.training
         tok_train = self._tokenize_dataset(train_dataset)
         tok_val = self._tokenize_dataset(val_dataset) if val_dataset else None
@@ -157,13 +159,17 @@ class CausalLMModel:
 
         collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm=False)
 
+        callbacks: list[Any] = [FileLoggingCallback(tcfg.log_file)]
+        if tracker is not None:
+            callbacks.append(TrackingCallback(tracker))
+
         trainer = Trainer(
             model=self.model,
             args=training_args,
             train_dataset=tok_train,
             eval_dataset=tok_val,
             data_collator=collator,
-            callbacks=[FileLoggingCallback(tcfg.log_file)],
+            callbacks=callbacks,
         )
 
         result = trainer.train()

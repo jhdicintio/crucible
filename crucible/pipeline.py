@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from flytekit import workflow
@@ -23,10 +23,13 @@ class PipelineResult:
 def full_pipeline(config: CrucibleConfig) -> PipelineResult:
     """Load & clean data, fine-tune a model, then evaluate on the test set."""
     splits = data_processing_pipeline(config=config.data_processing)
+    full_config_dict = asdict(config)
     ft_result = finetune(
         train_df=splits.train,
         val_df=splits.val,
         config=config.finetuning,
+        tracking_config=config.tracking,
+        full_config_dict=full_config_dict,
     )
     eval_result = evaluate(
         test_df=splits.test,

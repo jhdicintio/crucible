@@ -47,6 +47,7 @@ class FormattingConfig:
         "### Response:\n"
         "{label}"
     )
+    use_model_template: bool = True
     column_mapping: dict[str, str] = field(default_factory=dict)
     output_column: str = "formatted_text"
 

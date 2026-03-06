@@ -79,3 +79,8 @@ evaluation:
   bertscore_model: microsoft/deberta-xlarge-mnli
   similarity_model: all-MiniLM-L6-v2
   output_file: evaluation_results.json
+
+tracking:
+  backend: sqlite
+  sqlite_path: experiments.db
+  run_name: null
