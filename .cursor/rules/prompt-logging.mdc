@@ -1,0 +1,23 @@
+---
+description: Log every user prompt to prompt-log.md
+alwaysApply: true
+---
+
+# Prompt Logging
+
+At the start of every conversation turn, append the user's prompt to `prompt-log.md` at the repository root.
+
+## Format
+
+Each entry should be a markdown list item with a timestamp and the full prompt text:
+
+```markdown
+- **YYYY-MM-DD HH:MM** — <user prompt text>
+```
+
+## Rules
+
+- Create `prompt-log.md` if it doesn't exist yet, with a `# Prompt Log` heading.
+- Append new entries at the bottom of the file.
+- Log the prompt verbatim (trim only leading/trailing whitespace).
+- Do this silently — don't mention the logging to the user unless they ask about it.

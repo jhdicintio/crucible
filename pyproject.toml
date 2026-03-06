@@ -1,0 +1,41 @@
+[project]
+name = "crucible"
+version = "0.1.0"
+description = "Fine-tuning SLMs for financial use cases"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+
+[tool.poetry]
+packages = [{ include = "crucible" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^6.0"
+pre-commit = "^4.0"
+ruff = "^0.9"
+mypy = "^1.14"
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-v", "--tb=short", "--strict-markers"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
