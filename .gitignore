@@ -33,3 +33,9 @@ coverage.xml
 # OS
 .DS_Store
 Thumbs.db
+
+# SQLite
+*.db
+
+# cursor
+.cursor/

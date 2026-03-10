@@ -21,3 +21,5 @@
 - **2026-03-06 11:03** — could you hit this endpoint for /ask and /health from using curl @/Users/jackdicintio/.cursor/projects/Users-jackdicintio-workspace-crucible/terminals/3.txt:991-1000
 - **2026-03-06 11:05** — yeah would you mind putting those as task ping-api
 - **2026-03-06** — there are a bunch of precommit issues could you help fix them?
+- **2026-03-07** — @README.md:1-199 Hey! I'd like to show this as a personal project on my github -- how does this read?  Does it sound like I am responding to a prompt or does it sounds like a personal project? Could you add some thing about the motivation ?
+- **2026-03-07** — @README.md:1-201 could you take out 'what I would do differently' ?  and move the startup and usage to the top ?

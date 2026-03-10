@@ -2,6 +2,15 @@
 
 I built Crucible as an end-to-end pipeline for fine-tuning a small language model on financial QA data and serving it behind a REST API. The goal was to stand up something runnable on a laptop (CPU-first) with no existing ML infra—so everything is config-driven, reproducible, and single-command where possible.
 
+**Why I built it.** I wanted to see how far you can get with a small model and domain-specific data—no GPU farm, no MLOps stack—and to have a single pipeline I could hand to someone and say “same YAML, same result.” Financial QA is a good test: the domain has clear boundaries, real stakes (hallucination vs. refusal), and public instruction data to work with. Crucible is my take on that: one config, one command, and a served model you can actually query.
+
+---
+
+## Quick start
+
+- **Train (full pipeline):** `task train` or `task train -- conf/experiments/experiment_0_baseline.yaml`. See [Reproducing training results](#reproducing-training-results) for details.
+- **Serve:** `task serve` (local) or `task docker:serve` (container with model mount). See [API documentation](#api-documentation) for `/health` and `/ask` usage.
+
 ---
 
 ## Architecture and key design decisions
@@ -157,16 +166,6 @@ Response:
 
 ---
 
-## What I would do differently with more time
-
-- **Data curation:** Score training examples by relevance and quality (e.g. embedding similarity to a banking FAQ set, length/heuristic filters), then compare training on a curated subset vs. a random sample of the same size and measure impact on downstream metrics and human judgment.
-- **Evaluation depth:** Add a small human eval protocol (e.g. 50–100 questions) with dimensions like correctness, refusal appropriateness, and tone, and track those alongside ROUGE/BERTScore so the numbers map to something a banker would care about.
-- **Multi-run comparison:** Train at least two meaningfully different configs (e.g. different sample strategies, different LoRA rank, or different prompt formats) and log everything to the same experiment backend so I could produce a short comparison table and a recommendation for which config to deploy.
-- **Larger model on GPU:** Move to a 0.5B–1B model and GPU for real training runs; keep the current small model + CPU path for fast iteration and demos.
-- **Refusal tuning:** Sweep guardrail thresholds (scope/confidence) and document the precision–recall tradeoff for refusals so we can choose a policy that matches risk tolerance.
-
----
-
 ## Project structure
 
 ```
@@ -185,14 +184,4 @@ conf/
   experiments/     # Full run configs (e.g. experiment_0_baseline.yaml)
 tests/
 Taskfile.yml       # install, test, lint, fmt, serve, docker:build, docker:serve
-prompt-log.md      # Log of all AI tool interactions (required for assessment)
 ```
-
----
-
-## Single-command startup
-
-- **Train (full pipeline):** Run the pipeline with an experiment YAML as above; the exact one-liner is in “Reproducing training results.”
-- **Serve:** `task serve` (local) or `task docker:serve` (container with model mount).
-
-All interactions with the AI tool used to build this pipeline are logged in **prompt-log.md** in the repo root for review.
